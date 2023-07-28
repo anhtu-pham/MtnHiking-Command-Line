@@ -8,8 +8,9 @@ let user = Users.getInstance();
 let mountains = Mountains.getInstance();
 let trails = Trails.getInstance();
 let trips = Trips.getInstance();
+let chosenTrailID = null;
 
-console.log("-------------------- MTNTRAILS --------------------\n");
+console.log("-------------------- WELCOME TO MTNTRAILS --------------------\n");
 let option = prompt("Authentication with 1 option: (1) Signup (2) Login  ");
 switch (option) {
   case "1":
@@ -29,20 +30,23 @@ switch (option) {
 
 while (true) {
   option = prompt(
-    "Choose 1 option: (1) Retrieve your trips (2) Search mountains and associated trails (3) Add trip (4) Update trip (5) Remove trip (6) Logout and End program  "
+    "Choose 1 option: (1) Search mountains and associated trails (2) Get your trip list (3) Add trip (4) Update trip (5) Remove trip (6) Logout and End program  "
   );
   switch (option) {
     case "1":
-      retrieveTrips(user.usedUsername);
+      chosenTrailID = search();
       break;
     case "2":
-      search();
+      getTripList(user.usedUsername);
       break;
     case "3":
+      addTripWithOptions(user.usedUsername);
       break;
     case "4":
+      updateTrip(user.usedUsername);
       break;
     case "5":
+      removeTrip(user.usedUsername);
       break;
     case "6":
       user.logout();
@@ -50,24 +54,6 @@ while (true) {
     default:
       auth = prompt("Only choose option from 1 to 6:  ");
   }
-}
-
-async function retrieveTrips(usedUsername) {
-  console.log("YOUR TRIPS\n");
-  let tripCategoriesToSort = {
-    "trail name": "trail_name",
-    "starting time": "starting_time",
-    "ending time": "ending_time",
-    ratings: "ratings",
-  };
-  let tripCategory = null;
-  while (!Object.keys(tripCategoriesToSort).includes(tripCategory)) {
-    tripCategory = prompt(
-      "Sort trips by trail name / starting time / ending time / ratings:  "
-    );
-  }
-  console.log("List of trips sorted by " + tripCategory + ":\n");
-  await trips.getTripList(usedUsername, tripCategoriesToSort[tripCategory]);
 }
 
 async function search() {
@@ -86,7 +72,7 @@ async function search() {
   }
   console.log("List of mountains sorted by " + mtnCategory + ":\n");
   await mountains.getMountainList(null, mtnCategoriesToSort[mtnCategory]);
-  let mtnID = prompt("Choose mountain by mountain ID:  ");
+  let mtnID = prompt("Choose your preferred mountain by mountain ID:  ");
 
   console.log("LIST OF TRAILS ASSOCIATED WITH CHOSEN MOUNTAIN\n");
   let trailCategoriesToSort = {
@@ -102,5 +88,85 @@ async function search() {
     );
   }
   console.log("List of trails sorted by " + trailCategory + ":\n");
-  await trails.getAssociatedTrailList(mtnID, trailCategoriesToSort[trailCategory]);
+  await trails.getAssociatedTrailList(
+    mtnID,
+    trailCategoriesToSort[trailCategory]
+  );
+  return prompt("Choose your preferred trail by trail ID:  ");
+}
+
+async function getTripList(usedUsername) {
+  console.log("YOUR TRIPS\n");
+  let tripCategoriesToSort = {
+    "trail name": "trail_name",
+    "starting time": "starting_time",
+    "ending time": "ending_time",
+    ratings: "ratings",
+  };
+  let tripCategory = null;
+  while (!Object.keys(tripCategoriesToSort).includes(tripCategory)) {
+    tripCategory = prompt(
+      "Sort trips by trail name / starting time / ending time / ratings:  "
+    );
+  }
+  console.log("List of trips sorted by " + tripCategory + ":\n");
+  let [pastTripList, futureTripList] = await trips.getTripList(
+    usedUsername,
+    tripCategoriesToSort[tripCategory]
+  );
+  let currentTime = new Date().toISOString();
+  let formattedCurrentTime = currentTime
+    .substring(0, currentTime.indexOf("."))
+    .replace("T", " ");
+  pastTripList = response;
+  let i = 0;
+  while (response[i]["Trail_trip.ending_time"] > formattedCurrentTime) {
+    let trip = pastTripList.shift();
+    futureTripList.push(trip);
+    i++;
+  }
+}
+
+async function addTripWithOptions(usedUsername) {
+  let option = null;
+  let options = ["Y", "N"];
+  while (!options.includes(option)) {
+    option = prompt(
+      "Do you want to add the trail you have chosen most recently? (Y/N):  "
+    );
+  }
+  if (option == "N") {
+    console.log("Please search to choose your new preferred trail\n");
+    chosenTrailID = search();
+  }
+  addTrip(usedUsername, chosenTrailID);
+}
+
+async function addTrip(usedUsername, trailID) {
+  let startingTime = prompt("Please type your starting time:  ");
+  let endingTime = prompt("Please type your ending time:  ");
+  await trips.addTrip(usedUsername, trailID, startingTime, endingTime);
+}
+
+async function updateTrip(usedUsername) {
+  let tripID = prompt(
+    "Please type the ID of the trip that you want to update:  "
+  );
+  let trailID = prompt("Please type the updated trail ID:  ");
+  let startingTime = prompt("Please type the updated starting time:  ");
+  let endingTime = prompt("Please type the updated ending time:  ");
+  await trips.updateTrip(
+    usedUsername,
+    tripID,
+    trailID,
+    startingTime,
+    endingTime
+  );
+}
+
+async function removeTrip(usedUsername) {
+  let tripID = prompt(
+    "Please type the ID of the trip that you want to remove:  "
+  );
+  await trips.removeTrip(usedUsername, tripID);
 }
