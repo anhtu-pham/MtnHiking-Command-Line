@@ -1,17 +1,16 @@
-const crudFunctions = require("./crud.js");
+const crud = require("./crud.js");
+let instance = null;
 
 class Mountains {
     static getInstance() {
-        return instance ? instance : new Mountains();
+        instance = instance ? instance : new Mountains();
+        return instance;
     }
 
     async getMountainList(cds, oB) {
-        let crud = crudFunctions.getInstance();
         try {
-            let promise = await crud.select(["Mountain"], null, cds, oB);
-            for(let i = 0; i < res.length; i++) {
-                console.log(promise[i] + "\n");
-            }
+            let mountains = await crud.select(["Mountain"], null, cds, oB);
+            mountains.forEach((mountain) => console.log(mountain + "\n"));
         }
         catch(error) {
             console.log("Cannot retrieve mountain list");

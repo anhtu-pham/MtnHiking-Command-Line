@@ -1,46 +1,39 @@
-const crudFunctions = require("./crud.js");
-// const Mountains = require("./mountains.js");
+const crud = require("./crud.js");
 
 let instance = null;
 
 class Users {
 
     usedUsername = null;
-    mountains = require("./mountains.js");
 
     static getInstance() {
-        return instance ? instance : new Users();
+        instance = instance ? instance : new Users();
+        return instance;
     }
 
     async signUp(username, email, password) {
-        let crud = crudFunctions.getInstance();
         try {
-            let promise = await crud.insert(
-                db, 
+            await crud.insert(
                 "User",
                 ["username", "email", "password"],
                 ["\'" + username + "\'", "\'" + email + "\'", "\'" + password + "\'"]
             )
         }
         catch(error) {
-            console.log("Signup failed");
+            console.log(error);
+            console.log("Username has been chosen. Please use another one.");
+            throw(error);
         };
     }
     async logIn(username, password) {
-        let crud = crudFunctions.getInstance();
         try {
-            let promise = await crud.select(
+            let user = await crud.select(
                 ["User"], 
                 null, 
                 ["username = \'" + username + "\'", "password = \'" + password + "\'"], 
                 null);
-            if(promise.length == 1) {
-                usedUsername = promise[0]["username"];
-                console.log("Login succeeded");
-            }
-            else {
-                console.log("Login failed");
-            }
+            usedUsername = user[0]["username"];
+            console.log("Login succeeded");
         }
         catch(error) {
             console.log("Login failed");
@@ -48,7 +41,7 @@ class Users {
     }
 
     logout() {
-        usedUsername = null;
+        this.usedUsername = null;
     }
 }
 

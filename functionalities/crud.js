@@ -1,16 +1,9 @@
 const db = require("../hiking-database/database.js");
 
-let instance = null;
-
-class CrudFunctions {
-    static getInstance() {
-        return instance ? instance : new CrudFunctions();
-    }
-
-    async insert(tb, atts, vals) {
+    async function insert(tb, atts, vals) {
         let attrs = atts.join(", ");
         let values = vals.join(", ");
-        let sql = "INSERT INTO " + tb + "(" + attrs + ") VALUES(" + values +")";
+        let sql = "INSERT INTO " + tb + " (" + attrs + ") VALUES (" + values +")";
         console.log(sql);
         return new Promise((resolve, reject) => {
             db.run(sql, (error) => {
@@ -18,13 +11,13 @@ class CrudFunctions {
                     reject(error);
                 }
                 else {
-                    resolve();
+                    resolve(this.lastID);
                 }
             });
         });
     }
 
-    async select(tbs, atts, cds, oB) {
+    async function select(tbs, atts, cds, oB) {
         let tables = tbs.join(", ");
         let attrs = (atts == null) ? "*" : atts.join(", ");
         let conds = (cds == null) ? "" : "WHERE " + cds.join(" AND ");
@@ -43,7 +36,7 @@ class CrudFunctions {
         });
     }
 
-    async update(tb, uds, cds) {
+    async function update(tb, uds, cds) {
         let conds = cds.join(" AND ");
         let updates = uds.join(", ");
         let sql = "UPDATE " + tb + " SET " + updates + " WHERE " + conds;
@@ -60,7 +53,7 @@ class CrudFunctions {
         });
     }
 
-    async delete(tb, cds) {
+    async function remove(tb, cds) {
         let conds = cds.join(" AND ");
         let sql = "DELETE FROM " + tb + " WHERE " + conds;
         console.log(sql);
@@ -75,6 +68,12 @@ class CrudFunctions {
             });
         });
     }
-}
+    
+const crudFunctions = {
+    insert: insert,
+    select: select,
+    update: update,
+    remove: remove
+};
 
-module.exports = CrudFunctions;
+module.exports = crudFunctions;
