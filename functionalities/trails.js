@@ -25,9 +25,9 @@ class Trails {
     async getAssociatedTrailList(mtnID, oB) {
         try {
             let trails = await crud.select(
-                ["Trail", "Mountain_trail"], 
+                ["Trail", "Mountain_Trail"], 
                 ["Trail.trail_ID", "trail_name", "elevation_gain", "difficulty", "trail_length", "trail_location", "water_station", "trail_description"], 
-                ["Trail.trail_ID = Mountain_trail.trail_ID", "Mountain_trail.mountain_ID = " + mtnID],
+                ["Trail.trail_ID = Mountain_Trail.trail_ID", "Mountain_Trail.mountain_ID = " + mtnID],
                 oB);
             trails.forEach((trail) => console.log(trail + "\n"));
         }

@@ -12,9 +12,6 @@ let chosenTrailID = null;
 
 console.log("-------------------- WELCOME TO MTNTRAILS --------------------\n");
 
-// await authorize();
-// await operate();
-
 authorize().then(() => {
   operate();
 });
@@ -49,6 +46,32 @@ async function authorize() {
 }
 
 async function operate() {
+  let toUpdateInfo = prompt(
+    "Do you want to update your optional information? (Y for Yes / other for No)  "
+  );
+  if (toUpdateInfo == "Y") {
+    let age = prompt("Please type your age (or U for unchanging)  ");
+    let phoneNumber = prompt(
+      "Please type your phone number (or U for unchanging)  "
+    );
+    let currentLocation = prompt(
+      "Please type your current location (or U for unchanging)  "
+    );
+    let fitnessLevel = prompt(
+      "Please type your fitness level (1-5) (or U for unchanging)  "
+    );
+    let emergencyContact = prompt(
+      "Please type your emergency contact (or U for unchanging)  "
+    );
+    await user.updateInfo(
+      user.usedUsername,
+      age,
+      phoneNumber,
+      currentLocation,
+      fitnessLevel,
+      emergencyContact
+    );
+  }
   let option = 0;
   while (true) {
     option = prompt(
@@ -59,16 +82,16 @@ async function operate() {
         chosenTrailID = await search();
         break;
       case "2":
-        await getTripList(user.usedUsername);
+        await getTripListForUser(user.usedUsername);
         break;
       case "3":
-        await addTripWithOptions(user.usedUsername);
+        await addTripForUser(user.usedUsername);
         break;
       case "4":
-        await updateTrip(user.usedUsername);
+        await updateTripForUser(user.usedUsername);
         break;
       case "5":
-        await removeTrip(user.usedUsername);
+        await removeTripForUser(user.usedUsername);
         break;
       case "6":
         user.logout();
@@ -100,7 +123,20 @@ async function search() {
       await mountains.getMountainList(null, mtnCategoriesToSort[mtnCategory]);
     }
   }
-  let mtnID = prompt("Choose your preferred mountain by mountain ID  ");
+  let mtnID = "";
+  while (mtnID != "done") {
+    mtnID = prompt(
+      "See special places and conditions of mountain by mountain ID / done  "
+    );
+    if (mtnID != "done") {
+      console.log("Special places:");
+      await mountains.getSpecialPlaces(mtnID);
+      console.log("Conditions:");
+      await mountains.getConditions(mtnID);
+    }
+  }
+
+  let chosenMtnID = prompt("Choose your preferred mountain by mountain ID  ");
 
   console.log("LIST OF TRAILS ASSOCIATED WITH CHOSEN MOUNTAIN\n");
   let trailCategoriesToSort = {
@@ -120,7 +156,7 @@ async function search() {
     if (trailCategory != "sorting done") {
       console.log("List of trails sorted by " + trailCategory + ":\n");
       await trails.getAssociatedTrailList(
-        mtnID,
+        chosenMtnID,
         trailCategoriesToSort[trailCategory]
       );
     }
@@ -128,7 +164,7 @@ async function search() {
   return prompt("Choose your preferred trail by trail ID  ");
 }
 
-async function getTripList(usedUsername) {
+async function getTripListForUser(usedUsername) {
   console.log("YOUR TRIPS\n");
   let tripCategoriesToSort = {
     "trail name": "trail_name",
@@ -151,34 +187,40 @@ async function getTripList(usedUsername) {
   }
 }
 
-async function addTripWithOptions(usedUsername) {
-  let option = null;
-  let options = ["Y", "N"];
-  while (!options.includes(option)) {
-    option = prompt(
-      "Do you want to add the trail you have chosen most recently? (Y/N)  "
-    );
+// async function addTripWithOptions(usedUsername) {
+//   console.log("Please search to choose your preferred trail\n");
+//   let chosenTrailID = await search();
+//   await addTrip(usedUsername, chosenTrailID);
+// }
+
+async function addTripForUser(usedUsername) {
+  let chosenTrailID = null;
+  while(chosenTrailID == null) {
+    console.log("Please search to choose your preferred trail\n");
+    chosenTrailID = await search();
   }
-  if (option == "N") {
-    console.log("Please search to choose your new preferred trail\n");
-    chosenTrailID = search();
-  }
-  addTrip(usedUsername, chosenTrailID);
+  let startingTime = prompt(
+    "Please type your starting time (YYYY-MM-DD HH:MM:SS)  "
+  );
+  let endingTime = prompt(
+    "Please type your ending time (YYYY-MM-DD HH:MM:SS)  "
+  );
+  await trips.addTrip(usedUsername, chosenTrailID, startingTime, endingTime);
 }
 
-async function addTrip(usedUsername, trailID) {
-  let startingTime = prompt("Please type your starting time (YYYY-MM-DD HH:MM:SS)  ");
-  let endingTime = prompt("Please type your ending time (YYYY-MM-DD HH:MM:SS)  ");
-  await trips.addTrip(usedUsername, trailID, startingTime, endingTime);
-}
-
-async function updateTrip(usedUsername) {
+async function updateTripForUser(usedUsername) {
   let tripID = prompt(
     "Please type the ID of the trip that you want to update  "
   );
-  let trailID = prompt("Please type the updated trail ID  ");
-  let startingTime = prompt("Please type the updated starting time  ");
-  let endingTime = prompt("Please type the updated ending time  ");
+  let trailID = prompt(
+    "Please type the updated trail ID (or U for unchanging)  "
+  );
+  let startingTime = prompt(
+    "Please type the updated starting time (or U for unchanging)  "
+  );
+  let endingTime = prompt(
+    "Please type the updated ending time (or U for unchanging)  "
+  );
   await trips.updateTrip(
     usedUsername,
     tripID,
@@ -188,7 +230,7 @@ async function updateTrip(usedUsername) {
   );
 }
 
-async function removeTrip(usedUsername) {
+async function removeTripForUser(usedUsername) {
   let tripID = prompt(
     "Please type the ID of the trip that you want to remove  "
   );
