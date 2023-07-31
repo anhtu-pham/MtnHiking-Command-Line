@@ -19,9 +19,10 @@ class Users {
                 ["\'" + username + "\'", "\'" + email + "\'", "\'" + password + "\'"]
             );
             this.usedUsername = username;
+            console.log("Sign-up succeeded");
         }
         catch(error) {
-            console.log(error);
+            // console.log(error);
             console.log("Username has been chosen. Please use another one.");
             throw(error);
         };
@@ -34,11 +35,13 @@ class Users {
                 ["username = \'" + username + "\'", "password = \'" + password + "\'"], 
                 null,
                 1);
-            usedUsername = user[0]["username"];
+            this.usedUsername = user[0]["username"];
             console.log("Login succeeded");
         }
         catch(error) {
+            // console.log(error);
             console.log("Login failed");
+            throw(error);
         }
     }
 
@@ -67,7 +70,7 @@ class Users {
         }
     }
 
-    logout() {
+    logOut() {
         this.usedUsername = null;
     }
 }

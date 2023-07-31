@@ -7,61 +7,39 @@ class Trips {
     return instance;
   }
 
-  // async getTripList(username, oB) {
-  //   let pastTripList = [];
-  //   let nextTripList = [];
-  //   let crud = crudFunctions.getInstance();
-  //   try {
-  //     let response = await crud.select(
-  //       ["Trail_trip", "Trail"],
-  //       ["trip_ID", "trail_name", "starting_time", "ending_time", "ratings"],
-  //       [
-  //         "Trail_trip.trail_ID = Trail.trail_ID",
-  //         "username = \'" + username + "\'",
-  //       ],
-  //       oB
-  //     );
-  //     // compare ending_time with current local time, add to corresponding trips.
-  //   //   for (let i = 0; i < response.length; i++) {
-  //   //     console.log(response[i] + "\n");
-  //   //   }
-  //     let currentTime = new Date().toISOString();
-  //     let formattedCurrentTime = currentTime
-  //       .substring(0, currentTime.indexOf("."))
-  //       .replace("T", " ");
-  //     pastTripList = response;
-  //     let i = 0;
-  //     while (promise[i]["Trail_trip.ending_time"] > formattedCurrentTime) {
-  //       let trip = pastTripList.shift();
-  //       nextTripList.push(trip);
-  //       i++;
-  //     }
-  //     console.log("NEXT TRIPS:\n");
-  //     nextTripList.forEach((nextTrip) => console.log(nextTrip + "\n"));
-  //     console.log("PAST TRIPS:\n");
-  //     nextTripList.forEach((pastTrip) => console.log(pastTrip + "\n"));
-  //   } catch (error) {
-  //     console.log("Cannot get trip list");
-  //   }
-  // }
+  printOutput(data) {
+    if(data.length == 0) {
+      console.log("No trips satisfy this criteria");
+    }
+    else {
+      const columns = Object.keys(data[0]);
+  
+      const columnWidths = {};
+      columns.forEach((column) => {
+        columnWidths[column] = Math.max(
+          ...data.map((row) => String(row[column]).length)
+        );
+      });
+      console.log(
+        `| ${columns
+          .map((column) => column.padEnd(columnWidths[column]))
+          .join(" | ")} |`
+      );
+      console.log(
+        `| ${columns
+          .map((column) => "-".repeat(columnWidths[column]))
+          .join(" | ")} |`
+      );
+      data.forEach((row) => {
+        console.log(
+          `| ${columns
+            .map((column) => String(row[column]).padEnd(columnWidths[column]))
+            .join(" | ")} |`
+        );
+      });
+    }
+  }
 
-  // async addTrip(username, trailID, startingTime, endingTime) {
-  //   let crud = crudFunctions.getInstance();
-  //   try {
-  //     await crud.insert(
-  //       "Trail_trip",
-  //       ["username", "starting_time", "ending_time", "trail_ID"],
-  //       [
-  //         "\'" + username + "\'",
-  //         "\'" + startingTime + "\'",
-  //         "\'" + endingTime + "\'",
-  //         trailID,
-  //       ]
-  //     );
-  //   } catch (error) {
-  //     console.log("Cannot add trip");
-  //   }
-  // }
   async getTripList(username, oB) {
     let nextTripList = [];
     let pastTripList = [];
@@ -73,7 +51,6 @@ class Trips {
           "trail_name",
           "starting_time",
           "ending_time",
-          "ratings",
           "finished"
         ],
         [
@@ -84,37 +61,27 @@ class Trips {
         ],
         oB
       );
-      console.log(tripList);
-      // let currentTime = new Date().toISOString();
-      // let formattedCurrentTime = currentTime
-      //   .substring(0, currentTime.indexOf("."))
-      //   .replace("T", " ");
-      // pastTripList = tripList;
-      // let i = 0;
-      // while (tripList[i]["starting_time"] > formattedCurrentTime) {
-      //   let trip = pastTripList.shift();
-      //   nextTripList.push(trip);
-      //   i++;
-      // }
       tripList.forEach((trip) => {
-        if(trip["finished"] == "false") {
-          nextTripList.push(trip);
-        }
-        if(trip["finished"] == "true") {
+        if(trip["finished"] == "1") {
           pastTripList.push(trip);
+        }
+        else {
+          nextTripList.push(trip);
         }
       });
       console.log("NEXT TRIPS:\n");
-      nextTripList.forEach((nextTrip) => console.log(nextTrip + "\n"));
+      // nextTripList.forEach((nextTrip) => console.log(nextTrip + "\n"));
+      this.printOutput(nextTripList);
       console.log("PAST TRIPS:\n");
-      nextTripList.forEach((pastTrip) => console.log(pastTrip + "\n"));
+      // nextTripList.forEach((pastTrip) => console.log(pastTrip + "\n"));
+      this.printOutput(pastTripList);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       console.log("Cannot get trip list");
     }
   }
 
-  async addTrip(username, trailID, startingTime, endingTime) {
+  async addTrip(username, trailID, startingTime, endingTime, finished) {
     try {
       let associatedTrail = await crud.select(
         ["Trail"],
@@ -126,8 +93,8 @@ class Trips {
       if(associatedTrail.length == 1) {
         await crud.insert(
           "Trip",
-          ["starting_time", "ending_time"],
-          ["'" + startingTime + "'", "'" + endingTime + "'"]
+          ["starting_time", "ending_time", "finished"],
+          ["\'" + startingTime + "\'", "\'" + endingTime + "\'", finished]
         );
         // console.log("ROW IDDDDDD: " + rowID);
         let lastTrip = await crud.select(
@@ -152,12 +119,12 @@ class Trips {
         console.log("There is no trail associated with the given trail ID");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       console.log("Cannot add trip");
     }
   }
 
-  async updateTrip(username, tripID, trailID, startingTime, endingTime) {
+  async updateTrip(username, tripID, trailID, startingTime, endingTime, finished) {
     try {
       let userTrip = await crud.select(
         ["User_Trip"],
@@ -180,6 +147,9 @@ class Trips {
         }
         if(endingTime != "U") {
           toUpdate.push("ending_time = \'" + endingTime + "\'");
+        }
+        if(finished != "U") {
+          toUpdate.push("finished = " + finished);
         }
         await crud.update("Trip", toUpdate, ["trip_ID = " + tripID]);
       }
