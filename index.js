@@ -99,7 +99,7 @@ async function operate() {
         user.logOut();
         process.exit();
       default:
-        option = prompt("Only choose option from 1 to 6  ");
+        option = prompt("Only choose option from 1 to 7  ");
     }
   }
 }
@@ -249,6 +249,8 @@ async function removeTripForUser(usedUsername) {
 async function doSpecialFunctions() {
   console.log("LIST OF TRAILS WHERE ALL TRIPS HAVE BEEN FINISHED:");
   await trails.getTrailsWithAllTripsFinished();
+  console.log("LIST OF TRAILS WHERE ALL TRIPS HAVE BEEN FINISHED SECOND WAY:");
+  await trails.getTrailsWithAllTripsFinished2();
   console.log("LIST OF TRAILS SPANNING OVER MANY MOUNTAINS:");
   await trails.getSpanningTrails();
 }

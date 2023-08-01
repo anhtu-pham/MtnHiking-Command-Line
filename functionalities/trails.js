@@ -61,15 +61,15 @@ class Trails {
             ["Trail T", "Trip_Trail R1"], 
             ["T.trail_ID", "T.trail_name", "T.difficulty", "T.trail_length", "T.water_station", "T.trail_description"], 
             ["T.trail_ID = R1.trail_ID",
-             "NOT EXISTS (SELECT DISTINCT R2.trip_ID FROM Trip_Trail R2 WHERE R2.trip_ID = R1.trip_ID EXCEPT SELECT DISTINCT trip_ID FROM Trip WHERE finished = 1)"],
+             "NOT EXISTS (SELECT DISTINCT R2.trip_ID FROM Trip_Trail R2 WHERE R2.trail_ID = R1.trail_ID EXCEPT SELECT DISTINCT trip_ID FROM Trip WHERE finished = 1)"],
             "T.trail_name");
         this.printOutput(trails);
-    }
-    catch(error) {
+      }
+      catch(error) {
         console.log(error);
         console.log("Cannot retrieve trail list");
+      }
     }
-  }
 
   async getSpanningTrails() {
     try {
