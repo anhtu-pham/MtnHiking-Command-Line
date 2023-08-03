@@ -9,7 +9,7 @@ let mountains = Mountains.getInstance();
 let trails = Trails.getInstance();
 let trips = Trips.getInstance();
 
-console.log("-------------------- WELCOME TO MTNTRAILS --------------------\n");
+console.log("-------------------- WELCOME TO MTNHIKING --------------------\n");
 
 authorize().then(() => {
   operate();
@@ -249,8 +249,6 @@ async function removeTripForUser(usedUsername) {
 async function doSpecialFunctions() {
   console.log("LIST OF TRAILS WHERE ALL TRIPS HAVE BEEN FINISHED:");
   await trails.getTrailsWithAllTripsFinished();
-  console.log("LIST OF TRAILS WHERE ALL TRIPS HAVE BEEN FINISHED SECOND WAY:");
-  await trails.getTrailsWithAllTripsFinished2();
   console.log("LIST OF TRAILS SPANNING OVER MANY MOUNTAINS:");
   await trails.getSpanningTrails();
 }
